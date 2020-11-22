@@ -7,12 +7,13 @@ import (
 	"package-mvc/app/utils"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 func CreateAccount(c *gin.Context) {
 
 	var account model.Account
-	if err := c.Bind(&account); err != nil {
+	if err := c.ShouldBindJSON(&account); err != nil {
 		utils.WrapAPIError(c, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -30,6 +31,7 @@ func CreateAccount(c *gin.Context) {
 		utils.WrapAPIError(c, err.Error(), http.StatusBadRequest)
 		return
 	}
+
 }
 
 func GetAccount(c *gin.Context) {
@@ -50,7 +52,7 @@ func GetAccount(c *gin.Context) {
 
 func Transfer(c *gin.Context) {
 	var transaction model.Transaction
-	if err := c.Bind(&transaction); err != nil {
+	if err := c.ShouldBindJSON(&transaction); err != nil {
 		utils.WrapAPIError(c, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -67,7 +69,7 @@ func Transfer(c *gin.Context) {
 
 func Withdraw(c *gin.Context) {
 	var transaction model.Transaction
-	if err := c.Bind(&transaction); err != nil {
+	if err := c.ShouldBindJSON(&transaction); err != nil {
 		utils.WrapAPIError(c, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -84,7 +86,7 @@ func Withdraw(c *gin.Context) {
 
 func Deposit(c *gin.Context) {
 	var transaction model.Transaction
-	if err := c.Bind(&transaction); err != nil {
+	if err := c.ShouldBindJSON(&transaction); err != nil {
 		utils.WrapAPIError(c, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -101,7 +103,7 @@ func Deposit(c *gin.Context) {
 
 func Login(c *gin.Context) {
 	var auth model.Auth
-	if err := c.Bind(&auth); err != nil {
+	if err := c.ShouldBindJSON(&auth); err != nil {
 		utils.WrapAPIError(c, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -113,5 +115,31 @@ func Login(c *gin.Context) {
 		}, http.StatusOK, "success")
 	} else {
 		utils.WrapAPIError(c, err.Error(), http.StatusBadRequest)
+	}
+}
+
+func Interest(c *gin.Context) {
+	var transaction model.Transaction
+	var dataInterest model.Interest
+
+	if err := c.ShouldBindBodyWith(&transaction, binding.JSON); err != nil {
+		utils.WrapAPIError(c, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := c.ShouldBindBodyWith(&dataInterest, binding.JSON); err != nil {
+		utils.WrapAPIError(c, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	percentage := dataInterest.Interest
+
+	flag, err := model.BankInterest(transaction, percentage)
+	if flag {
+		utils.WrapAPISuccess(c, "success", http.StatusOK)
+		return
+	} else {
+		utils.WrapAPIError(c, err.Error(), http.StatusBadRequest)
+		return
 	}
 }

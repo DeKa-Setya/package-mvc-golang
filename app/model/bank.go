@@ -15,14 +15,18 @@ import (
 type Account struct {
 	ID            int    `gorm:"primary_key" json:"-"`
 	IdAccount     string `json:"id_account,omitempty"`
-	Name          string `json:"name" form:"name"`
+	Name          string `json:"name"`
 	Password      string `json:"password,omitempty"`
 	AccountNumber int    `json:"account_number,omitempty"`
 	Saldo         int    `json:"saldo"`
 }
 
+type Interest struct {
+	Interest int `json:"interest"`
+}
+
 type Auth struct {
-	Name     string `json:"name" form:"name"`
+	Name     string `json:"name"`
 	Password string `json:"password"`
 }
 
@@ -40,15 +44,15 @@ func Login(auth Auth) (bool, error, string) {
 	var account Account
 	if err := DB.Where(&Account{Name: auth.Name}).First(&account).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return false, errors.Errorf("Account not found"), ""
+			return false, errors.Errorf("Account Not Found"), ""
+
 		}
 	}
 
 	err := utils.HashComparator([]byte(account.Password), []byte(auth.Password))
 	if err != nil {
-		return false, errors.Errorf("Incorrect Password"), ""
+		return false, errors.Errorf("Incorect Password"), ""
 	} else {
-
 		sign := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"name":           auth.Name,
 			"account_number": account.AccountNumber,
@@ -58,17 +62,21 @@ func Login(auth Auth) (bool, error, string) {
 		if err != nil {
 			return false, err, ""
 		}
+
 		return true, nil, token
 	}
 }
 
 func InsertNewAccount(account Account) (bool, error) {
+	name := account.Name
 	account.AccountNumber = utils.RangeIn(111111, 999999)
 	account.Saldo = 0
+	account.Name = name
 	account.IdAccount = fmt.Sprintf("id-%d", utils.RangeIn(111, 999))
 	if err := DB.Create(&account).Error; err != nil {
 		return false, errors.Errorf("invalid prepare statement :%+v\n", err)
 	}
+
 	return true, nil
 }
 
@@ -165,6 +173,32 @@ func Deposit(transaction Transaction) (bool, error) {
 			return err
 		}
 		transaction.TransactionType = constant.DEPOSIT
+		transaction.Timestamp = time.Now().Unix()
+		if err := tx.Create(&transaction).Error; err != nil {
+			// return any error will rollback
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func BankInterest(transaction Transaction, interest int) (bool, error) {
+	err := DB.Transaction(func(tx *gorm.DB) error {
+		var customer Account
+		if err := tx.Model(&Account{}).Where(&Account{AccountNumber: transaction.Recipient}).
+			First(&customer).
+			Update("saldo", customer.Saldo+(customer.Saldo*interest/100)).Error; err != nil {
+			// return any error will rollback
+			return err
+		}
+		recipient := transaction.Recipient
+		transaction.TransactionType = constant.INTEREST
+		transaction.Recipient = recipient
 		transaction.Timestamp = time.Now().Unix()
 		if err := tx.Create(&transaction).Error; err != nil {
 			// return any error will rollback

@@ -23,6 +23,7 @@ func main() {
 	router.POST("/api/v1/transfer", middleware.Auth, controller.Transfer)
 	router.POST("/api/v1/withdraw", middleware.Auth, controller.Withdraw)
 	router.POST("/api/v1/deposit", middleware.Auth, controller.Deposit)
+	router.POST("/api/v1/interest", middleware.Auth, controller.Interest)
 	// router.POST("/test", testing)
 	router.Run(":8000")
 }
