@@ -28,9 +28,9 @@ func TestUserSignup(t *testing.T) {
 	tests := []TestStruct{
 		{`{}`, BadRequestCode, "", 0},
 		{`{"name":""}`, BadRequestCode, "", 0},
-		{`{"name":"Irwan Syahputra","password":"123456"}`, BadRequestCode, "", 0},
-		{`{"name":"Irwan Syahputra","password":"123456","saldo" : 1000000}`, SuccessRequestCode, "", 0},
-		{`{"name":"Irwan Syahputra","password":"12456","saldo" : 1000000}`, BadRequestCode, "", 0}, // request should fail because of
+		{`{"name":"Dede Eka Prasetya","password":"123456"}`, BadRequestCode, "", 0},
+		{`{"name":"Dede Eka Prasetya","password":"123456","saldo" : 1000000}`, SuccessRequestCode, "", 0},
+		{`{"name":"Dede Eka Prasetya","password":"12456","saldo" : 1000000}`, BadRequestCode, "", 0}, // request should fail because of
 	}
 
 	for i, testCase := range tests {
@@ -63,8 +63,8 @@ func TestUserSignin(t *testing.T) {
 	tests := []TestStruct{
 		{`{}`, BadRequestCode, "", 0},
 		{`{"name":""}`, BadRequestCode, "", 0},
-		{`{"name":"Irwan Syahputra","password":"123456"}`, SuccessRequestCode, "", 0},
-		{`{"name":"Irwan Syahputra","password":"12456"}`, BadRequestCode, "", 0}, // request should fail because of
+		{`{"name":"Dede Eka Prasetya","password":"123456"}`, SuccessRequestCode, "", 0},
+		{`{"name":"Dede Eka Prasetya","password":"12456"}`, BadRequestCode, "", 0}, // request should fail because of
 	}
 
 	for i, testCase := range tests {
