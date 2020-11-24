@@ -143,3 +143,19 @@ func Interest(c *gin.Context) {
 		return
 	}
 }
+
+func Mutasi(c *gin.Context) {
+	idAccount := c.MustGet("account_number").(int)
+	flag, err, trx, acc := model.GetMutasi(idAccount)
+	if err != nil {
+		utils.WrapAPIError(c, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if flag {
+		utils.WrapAPIData(c, map[string]interface{}{
+			"account":  acc,
+			"mutation": trx,
+		}, http.StatusOK, "success")
+		return
+	}
+}

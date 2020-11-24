@@ -212,3 +212,32 @@ func BankInterest(transaction Transaction, interest int) (bool, error) {
 
 	return true, nil
 }
+
+func GetMutasi(idAccount int) (bool, error, []Transaction, Account) {
+	var transaction []Transaction
+	var account Account
+
+	if err := DB.Where("sender = ? OR recipient = ?",
+		idAccount, idAccount).Order("id desc").Limit(30).Find(&transaction).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return false, errors.Errorf("Account Not Found"), []Transaction{}, Account{}
+		} else {
+			return false, errors.Errorf("Invalid prepare statement :%+v\n", err), []Transaction{}, Account{}
+		}
+	}
+
+	if err := DB.Where(&Account{AccountNumber: idAccount}).Find(&account).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return false, errors.Errorf("Accout not Found"), []Transaction{}, Account{}
+		} else {
+			return false, errors.Errorf("Invalid prepare statement :%+v\n", err), []Transaction{}, Account{}
+		}
+	}
+
+	return true, nil, transaction, Account{
+		IdAccount:     account.IdAccount,
+		Name:          account.Name,
+		AccountNumber: account.AccountNumber,
+		Saldo:         account.Saldo,
+	}
+}

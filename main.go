@@ -24,6 +24,8 @@ func main() {
 	router.POST("/api/v1/withdraw", middleware.Auth, controller.Withdraw)
 	router.POST("/api/v1/deposit", middleware.Auth, controller.Deposit)
 	router.POST("/api/v1/interest", middleware.Auth, controller.Interest)
+	router.GET("/api/v1/mutasi", middleware.Auth, controller.Mutasi)
+
 	// router.POST("/test", testing)
 	router.Run(":8000")
 }
